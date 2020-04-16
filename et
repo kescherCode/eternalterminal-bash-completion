@@ -1,0 +1,33 @@
+# Bash completions for et (Eternal Terminal).         -*- shell-script -*-
+
+__et_init_completion()
+{
+    if declare -F _init_completions >/dev/null 2>&1; then
+        _init_completion
+    else
+        COMPREPLY=()
+        _get_comp_words_by_ref cur prev words cword
+    fi
+}
+
+_et () {
+    local cur
+
+    __et_init_completion || return
+
+    local simple_flags="-N -c -f -h -p -r -t -u -v -x"
+    local flags="--help --version --verbose --command --forward-ssh-agent
+    --host --jumphost --jport --kill-other-sessions --logtostdout
+    --no-terminal --tunnel --reversetunnel --port --prefix --silent
+    --serverfifo --ssh-socket --username"
+
+    if [[ "$cur" == --* && "$COMP_CWORD" == 1 ]]; then
+        COMPREPLY=($(compgen -W "$flags" -- "$cur"))
+    elif [[ "$cur" == -* && "$COMP_CWORD" == 1 ]]; then
+        COMPREPLY=($(compgen -W "$simple_flags" -- "$cur"))
+    else
+        _known_hosts_real -a "$cur"
+    fi
+}
+
+complete -o nospace -F _et et
